@@ -58,7 +58,7 @@ library(GGally)
 adoption_final <- read.csv(file = "../RawData/adoption_final.csv", header=TRUE, sep=",")
 april_billing_final <- read.csv(file = "../RawData/april_billing_final.csv", header=TRUE, sep=",")
 may_billing_final <- read.csv(file = "../RawData/may_billing_final.csv", header=TRUE, sep=",")
-jine_billing_final <- read.csv(file = "../RawData/june_billing_final.csv", header=TRUE, sep=",")
+june_billing_final <- read.csv(file = "../RawData/june_billing_final.csv", header=TRUE, sep=",")
 
 ```
 
