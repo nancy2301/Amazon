@@ -1,0 +1,65 @@
+---
+title: "Amazon Descriptive Analysis by Data-Cated"
+author: "Eirik, Jillian, Nancy, Yifan, Ziyu "
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+output:
+  html_document:
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    toc_depth: 3
+    toc_float: yes
+  # pdf_document: 
+  #   latex_engine: xelatex
+  
+---
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(
+	fig.width = 8.5,
+	message = FALSE,
+	warning = FALSE,
+	# include = FALSE,
+	echo = FALSE
+)
+
+options(tinytex.verbose = TRUE)
+
+# Clear environment of variables and functions
+rm(list = ls(all = TRUE)) 
+
+# Clear environment of packages
+if(is.null(sessionInfo()$otherPkgs) == FALSE) {
+  lapply(paste("package:", names(sessionInfo()$otherPkgs), sep=""), 
+         detach, character.only = TRUE, unload = TRUE)
+}
+```
+
+
+# Install and load Packages
+
+```{r, warning=FALSE, message=FALSE, echo=TRUE}
+library(tidyverse)
+library(here)
+library(skimr)
+library(sqldf)
+library(gridExtra)
+library(fpp2)
+library(olsrr)
+library(GGally)
+```
+
+
+# Load Data
+
+```{r, warning=FALSE, message=FALSE, echo=TRUE}
+
+adoption_final <- read.csv(file = "../RawData/adoption_final.csv", header=TRUE, sep=",")
+april_billing_final <- read.csv(file = "../RawData/april_billing_final.csv", header=TRUE, sep=",")
+may_billing_final <- read.csv(file = "../RawData/may_billing_final.csv", header=TRUE, sep=",")
+jine_billing_final <- read.csv(file = "../RawData/june_billing_final.csv", header=TRUE, sep=",")
+
+```
+
+
