@@ -49,6 +49,7 @@ library(fpp2)
 library(olsrr)
 library(GGally)
 library(lubridate)
+library(eeptools)
 ```
 
 
@@ -67,18 +68,21 @@ june <- read.csv(file = "../RawData/june_billing_final.csv", header=TRUE, sep=",
 Changing date format to match adoption table
 
 ```{r}
-
+# APRIL
 april$Billing_month <- as.Date(april$Billing_month) 
+april$Registration_date <- as.Date(april$Registration_date) 
 
 april$Billing_month <- format(april$Billing_month, "%B-%y")
 
-
+# MAY
 may$Billing_month <- as.Date(may$Billing_month) 
+may$Registration_date <- as.Date(may$Registration_date) 
 
 may$Billing_month <- format(may$Billing_month, "%B-%y")
 
-
-june$Billing_month <- as.Date(june$Billing_month) 
+# JUNE
+june$Billing_month <- as.Date(june$Billing_month)
+june$Registration_date <- as.Date(june$Registration_date) 
 
 june$Billing_month <- format(june$Billing_month, "%B-%y")
 
@@ -86,14 +90,46 @@ june$Billing_month <- format(june$Billing_month, "%B-%y")
 ```
 
 
+Calculating customer's age in months based on registration date and storing in a new column on each table
+
+```{r}
+april$customer_age <- age_calc(april$Registration_date, enddate = Sys.Date(), units = "months", precise = TRUE)
+
+may$customer_age <- age_calc(may$Registration_date, enddate = Sys.Date(), units = "months", precise = TRUE)
+
+june$customer_age <- age_calc(june$Registration_date, enddate = Sys.Date(), units = "months", precise = TRUE)
+
+```
+
+
 
 
 ```{r}
-
-
-
+summary(adoption)
 
 ```
+
+
+
+```{r}
+summary(april)
+```
+
+```{r}
+
+summary(may)
+```
+
+```{r}
+
+summary(june)
+```
+
+
+
+
+
+
 
 
 
