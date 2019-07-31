@@ -67,30 +67,37 @@ june <- read.csv(file = "../RawData/june_billing_final.csv", header=TRUE, sep=",
 
 Changing date format to match adoption table
 
+
 ```{r}
 # APRIL
+## converting from factor to date
 april$Billing_month <- as.Date(april$Billing_month) 
 april$Registration_date <- as.Date(april$Registration_date) 
 
+## changing date format
 april$Billing_month <- format(april$Billing_month, "%B-%y")
 
 # MAY
+## converting from factor to date
 may$Billing_month <- as.Date(may$Billing_month) 
 may$Registration_date <- as.Date(may$Registration_date) 
 
+## changing date format
 may$Billing_month <- format(may$Billing_month, "%B-%y")
 
 # JUNE
+## converting from factor to date
 june$Billing_month <- as.Date(june$Billing_month)
 june$Registration_date <- as.Date(june$Registration_date) 
 
+## changing date format
 june$Billing_month <- format(june$Billing_month, "%B-%y")
-
 
 ```
 
 
 Calculating customer's age in months based on registration date and storing in a new column on each table
+(takes a while to load, but it works!)
 
 ```{r}
 april$customer_age <- age_calc(april$Registration_date, enddate = Sys.Date(), units = "months", precise = TRUE)
@@ -103,10 +110,8 @@ june$customer_age <- age_calc(june$Registration_date, enddate = Sys.Date(), unit
 
 
 
-
 ```{r}
 summary(adoption)
-
 ```
 
 
@@ -116,14 +121,83 @@ summary(april)
 ```
 
 ```{r}
-
 summary(may)
 ```
 
 ```{r}
-
 summary(june)
 ```
+
+
+IDEALLY - add two new columns - total billed for month & number/count of products billed per customer
+
+having trouble storing output into a new column because grouping by customer-id reduced the number of rows 
+
+could always join the data back into the main table for the month but it seems like there should be a cleaner way
+
+
+APRIL
+
+```{r}
+apr_bill_per_cust <- april %>% 
+                        group_by(Customer_ID) %>% 
+                        summarise(sum(Billed_amount))
+apr_bill_per_cust
+                              
+unique_customer_apr <- distinct(april, Customer_ID)
+
+unique_customer_apr
+
+cust_product_tally_apr <- april %>% 
+                        group_by(Customer_ID) %>% 
+                        tally()
+
+cust_product_tally_apr
+
+```
+
+
+MAY
+
+```{r}
+may_bill_per_cust <- may %>% 
+                        group_by(Customer_ID) %>% 
+                        summarise(sum(Billed_amount))
+may_bill_per_cust
+                   
+           
+unique_customer_may <- distinct(may, Customer_ID)
+unique_customer_may
+
+
+cust_product_tally_may <- may %>% 
+                        group_by(Customer_ID) %>% 
+                        tally()
+cust_product_tally_may
+
+
+```
+
+JUNE
+
+```{r}
+jun_bill_per_cust <- june %>% 
+                        group_by(Customer_ID) %>% 
+                        summarise(sum(Billed_amount))
+jun_bill_per_cust
+                              
+unique_customer_jun <- distinct(june, Customer_ID)
+
+unique_customer_jun
+
+cust_product_tally_jun <- june %>% 
+                        group_by(Customer_ID) %>% 
+                        tally()
+
+cust_product_tally_jun
+```
+
+
 
 
 
