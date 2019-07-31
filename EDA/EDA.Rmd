@@ -129,11 +129,11 @@ summary(june)
 ```
 
 
-IDEALLY - add two new columns - total billed for month & number/count of products billed per customer
+IDEALLY - add two new columns - total billed for month & count of products billed per customer
 
 having trouble storing output into a new column because grouping by customer-id reduced the number of rows 
 
-could always join the data back into the main table for the month but it seems like there should be a cleaner way
+could always join the data back into the main table for the month but it seems like there should be a simpler way
 
 
 APRIL
