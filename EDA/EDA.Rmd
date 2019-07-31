@@ -48,6 +48,7 @@ library(gridExtra)
 library(fpp2)
 library(olsrr)
 library(GGally)
+library(lubridate)
 ```
 
 
@@ -55,11 +56,44 @@ library(GGally)
 
 ```{r, warning=FALSE, message=FALSE, echo=TRUE}
 
-adoption_final <- read.csv(file = "../RawData/adoption_final.csv", header=TRUE, sep=",")
-april_billing_final <- read.csv(file = "../RawData/april_billing_final.csv", header=TRUE, sep=",")
-may_billing_final <- read.csv(file = "../RawData/may_billing_final.csv", header=TRUE, sep=",")
-june_billing_final <- read.csv(file = "../RawData/june_billing_final.csv", header=TRUE, sep=",")
+adoption <- read.csv(file = "../RawData/adoption_final.csv", header=TRUE, sep=",")
+april <- read.csv(file = "../RawData/april_billing_final.csv", header=TRUE, sep=",")
+may <- read.csv(file = "../RawData/may_billing_final.csv", header=TRUE, sep=",")
+june <- read.csv(file = "../RawData/june_billing_final.csv", header=TRUE, sep=",")
 
 ```
+
+
+Changing date format to match adoption table
+
+```{r}
+
+april$Billing_month <- as.Date(april$Billing_month) 
+
+april$Billing_month <- format(april$Billing_month, "%B-%y")
+
+
+may$Billing_month <- as.Date(may$Billing_month) 
+
+may$Billing_month <- format(may$Billing_month, "%B-%y")
+
+
+june$Billing_month <- as.Date(june$Billing_month) 
+
+june$Billing_month <- format(june$Billing_month, "%B-%y")
+
+
+```
+
+
+
+
+```{r}
+
+
+
+
+```
+
 
 
