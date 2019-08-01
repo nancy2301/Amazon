@@ -65,26 +65,27 @@ june <- read.csv(file = "../RawData/june_billing_final.csv", header=TRUE, sep=",
 ```
 
 
-Changing date format to match adoption table
+
+```{r}
+adoption$Geo_Code <- as.character(adoption$Geo_Code)
+adoption$Customer_size <- as.factor(adoption$Customer_size)
+adoption$Visualize <- as.factor(adoption$Visualize)
+adoption$Alert <- as.factor(adoption$Alert)
+adoption$Report <- as.factor(adoption$Report)   
+adoption$Month <- as.factor(adoption$Month)
+adoption$Customer_ID <- as.factor(adoption$Customer_ID)
+summary(adoption)
+str(adoption)
+```
 
 
 ```{r}
-# APRIL
-## converting from factor to date
-april$Billing_month <- as.Date(april$Billing_month, "%Y-%m-%d") 
-april$Registration_date <- as.Date(april$Registration_date) 
+# If Geo_code is NA, set it as Geo_unclaimed
+adoption <- adoption %>% mutate(Geo_Code2 = ifelse(is.na(Geo_Code), "GEO-UNCLAIMED", Geo_Code))
 
-# MAY
-## converting from factor to date
-may$Billing_month <- as.Date(may$Billing_month, "%Y-%m-%d") 
-may$Registration_date <- as.Date(may$Registration_date) 
+adoption$Geo_Code <- as.factor(adoption$Geo_Code)
 
-# JUNE
-## converting from factor to date
-june$Billing_month <- as.Date(june$Billing_month, "%Y-%m-%d")
-june$Registration_date <- as.Date(june$Registration_date) 
-
-
+adoption <- adoption %>% select(-Geo_Code)
 ```
 
 
@@ -195,14 +196,4 @@ cust_product_tally_jun <- june %>%
 
 cust_product_tally_jun
 ```
-
-
-
-
-
-
-
-
-
-
 
