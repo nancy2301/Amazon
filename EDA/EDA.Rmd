@@ -71,27 +71,19 @@ Changing date format to match adoption table
 ```{r}
 # APRIL
 ## converting from factor to date
-april$Billing_month <- as.Date(april$Billing_month) 
+april$Billing_month <- as.Date(april$Billing_month, "%Y-%m-%d") 
 april$Registration_date <- as.Date(april$Registration_date) 
-
-## changing date format
-april$Billing_month <- format(april$Billing_month, "%B-%y")
 
 # MAY
 ## converting from factor to date
-may$Billing_month <- as.Date(may$Billing_month) 
+may$Billing_month <- as.Date(may$Billing_month, "%Y-%m-%d") 
 may$Registration_date <- as.Date(may$Registration_date) 
-
-## changing date format
-may$Billing_month <- format(may$Billing_month, "%B-%y")
 
 # JUNE
 ## converting from factor to date
-june$Billing_month <- as.Date(june$Billing_month)
+june$Billing_month <- as.Date(june$Billing_month, "%Y-%m-%d")
 june$Registration_date <- as.Date(june$Registration_date) 
 
-## changing date format
-june$Billing_month <- format(june$Billing_month, "%B-%y")
 
 ```
 
@@ -100,11 +92,18 @@ Calculating customer's age in months based on registration date and storing in a
 (takes a while to load, but it works!)
 
 ```{r}
-april$customer_age <- age_calc(april$Registration_date, enddate = Sys.Date(), units = "months", precise = TRUE)
 
-may$customer_age <- age_calc(may$Registration_date, enddate = Sys.Date(), units = "months", precise = TRUE)
+elapsed_months <- function(end_date, start_date) {
+    ed <- as.POSIXlt(end_date)
+    sd <- as.POSIXlt(start_date)
+    12 * (ed$year - sd$year) + (ed$mon - sd$mon)
+}
 
-june$customer_age <- age_calc(june$Registration_date, enddate = Sys.Date(), units = "months", precise = TRUE)
+april$customer_age <- elapsed_months( april$Billing_month, april$Registration_date)
+
+may$customer_age <- elapsed_months( may$Billing_month, may$Registration_date)
+
+june$customer_age <- elapsed_months( june$Billing_month,june$Registration_date)
 
 ```
 
