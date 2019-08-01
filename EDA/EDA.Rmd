@@ -159,6 +159,6 @@ adoptionJune <- adoption %>%
   filter(grepl("June",Month))
 JuneAll <-  adoptionJune %>% left_join(june , c("Customer_ID" = "Customer_ID"))
 
-rbind(AprilAll, MayAll, JuneAll)
+All <- rbind(AprilAll, MayAll, JuneAll)
 ```
 
