@@ -114,8 +114,6 @@ june$customer_age <- elapsed_months( june$Billing_month,june$Registration_date)
 summary(adoption)
 ```
 
-
-
 ```{r}
 summary(april)
 ```
@@ -178,22 +176,22 @@ cust_product_tally_may
 
 ```
 
-JUNE
+
+
 
 ```{r}
-jun_bill_per_cust <- june %>% 
-                        group_by(Customer_ID) %>% 
-                        summarise(sum(Billed_amount))
-jun_bill_per_cust
-                              
-unique_customer_jun <- distinct(june, Customer_ID)
 
-unique_customer_jun
+adoption <- sqldf('select *, case when Visualize like "%Yes%" or Alert like "%Yes%" or Report like "%Yes%"
+                              then "Yes"
+                              else "No" End as Tools_yes_no
+                  from adoption')
 
-cust_product_tally_jun <- june %>% 
-                        group_by(Customer_ID) %>% 
-                        tally()
+```
 
-cust_product_tally_jun
+
+```{r}
+
+combined_month <- rbind(april, may, june)
+
 ```
 
