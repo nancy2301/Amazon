@@ -1,0 +1,213 @@
+---
+title: "Zillow Data Analysis"
+author: "Jillian, Ziyu, Yifan, Eirik, Nancy"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+output:
+  html_document:
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    toc_depth: 3
+    toc_float: yes
+  # pdf_document: 
+  #   latex_engine: xelatex
+  
+---
+
+
+
+```{r, include= FALSE}
+
+# Clear environment of variables and functions
+rm(list = ls(all = TRUE)) 
+
+# Clear environmet of packages
+if(is.null(sessionInfo()$otherPkgs) == FALSE)lapply(paste("package:", names(sessionInfo()$otherPkgs), sep=""), detach, character.only = TRUE, unload = TRUE)
+
+
+
+```
+
+```{r, include= FALSE }
+# Load libraries
+#library(here) not used yet
+library(tidyverse)
+library(corrplot)
+library(GGally)
+library(gridExtra)
+library(readxl)
+library(kableExtra)
+library(janitor)
+library(GGally)
+library(psych)
+library(stringr)
+library(dplyr)
+library(openxlsx)
+library(knitr)
+library(skimr)
+library(here)
+
+```
+
+
+```{r, warning=FALSE, message=FALSE}
+adoption <- read_csv("adoption_final.csv")
+april <- read_csv("april_billing_final.csv")
+may <- read_csv("may_billing_final.csv")
+june <- read_csv("june_billing_final.csv")
+
+```
+
+## Adoption EDA
+
+```{r}
+summary(adoption)
+```
+
+```{r}
+# set factor
+adoption$Customer_size <- as.factor(adoption$Customer_size)
+adoption$Visualize <- as.factor(adoption$Visualize)
+adoption$Alert <- as.factor(adoption$Alert)
+adoption$Report <- as.factor(adoption$Report)   
+adoption$Month <- as.factor(adoption$Month)
+adoption$Customer_ID <- as.factor(adoption$Customer_ID)
+summary(adoption)
+str(adoption)
+```
+
+
+*Observations*
+
++ Most of customers are small customers
++ Most of customers came from AMER
++ Most of customers use visualize tool
++ Most of customers don't use alert and report tools
+
+
+```{r}
+# If Geo_code is NA, set it as Geo_unclaimed
+adoption <- adoption %>% mutate(Geo_Code2 = ifelse(is.na(Geo_Code), "GEO-UNCLAIMED", Geo_Code))
+
+adoption$Geo_Code <- as.factor(adoption$Geo_Code)
+
+# customer information
+customerinfo <- adoption %>% 
+  select(c("Customer_ID", "Customer_size", "Geo_Code2")) %>%
+  group_by(Customer_ID) %>%
+  filter(row_number()==1)
+
+summary(customerinfo)
+
+
+#Create function for frequency tables 
+count_table <- function(x,colname){
+   x = enquo(x)
+   kable(
+    customerinfo %>%
+      tabyl(!!x) %>%
+      adorn_totals()%>%
+      adorn_pct_formatting(digits = 2 ),
+      digits = 2,
+      format = "html",
+      align = c("l","c","c"),
+      col.names = c(colname,"Count","Total")
+    )%>%
+  kable_styling(full_width = F)}
+
+#Make count tables for univariate variables 
+count_table(Customer_size,"Customer size")
+count_table(Geo_Code2,"Geo distribution")
+
+```
+
+## Billing Information
+
+
+```{r}
+# April
+summary(april)
+
+april2 <- april
+
+elapsed_months <- function(end_date, start_date) {
+    ed <- as.POSIXlt(end_date)
+    sd <- as.POSIXlt(start_date)
+    12 * (ed$year - sd$year) + (ed$mon - sd$mon)
+}
+
+
+# Customer age
+april2$CustomerAge <- elapsed_months( april2$Billing_month,april2$Registration_date)
+
+aprilfinish <- april2 %>%
+  group_by(Customer_ID) %>%
+  summarise(ProductsUsed = n(), totalBilled = sum(Billed_amount), CustomerAge = mean(CustomerAge)) 
+  
+aprilfinish$CustomerAge <- as.numeric(aprilfinish$CustomerAge)
+summary(aprilfinish)
+
+
+
+
+```
+
+
+*Observations*
++ negative customer age?
+
+```{r}
+# May
+summary(may)
+
+may2 <- may
+
+
+# Customer age
+may2$CustomerAge <- elapsed_months( april2$Billing_month,april2$Registration_date)
+
+mayfinish <- may2 %>%
+  group_by(Customer_ID) %>%
+  summarise(ProductsUsed = n(), totalBilled = sum(Billed_amount), CustomerAge = mean(CustomerAge)) 
+  
+mayfinish$CustomerAge <- as.numeric(mayfinish$CustomerAge)
+summary(mayfinish)
+```
+
+```{r}
+# June
+summary(june)
+
+june2 <- june 
+
+
+# Customer age
+june2$CustomerAge <-  elapsed_months( april2$Billing_month,april2$Registration_date)
+
+junefinish <- june2 %>%
+  group_by(Customer_ID) %>%
+  summarise(ProductsUsed = n(), totalBilled = sum(Billed_amount), CustomerAge = mean(CustomerAge)) 
+  
+junefinish$CustomerAge <- as.numeric(junefinish$CustomerAge)
+summary(junefinish)
+```
+
+
+# join table
+```{r}
+adoptionApril <- adoption %>%
+  filter(grepl("April",Month))
+
+AprilAll <- adoptionApril %>% left_join(aprilfinish , c("Customer_ID" = "Customer_ID"))
+
+adoptionMay <- adoption %>%
+  filter(grepl("May",Month))
+MayAll <- adoptionMay %>% left_join(mayfinish , c("Customer_ID" = "Customer_ID"))
+
+adoptionJune <- adoption %>%
+  filter(grepl("June",Month))
+JuneAll <-  adoptionJune %>% left_join(junefinish , c("Customer_ID" = "Customer_ID"))
+
+
+```
+
