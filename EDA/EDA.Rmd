@@ -81,6 +81,7 @@ str(adoption)
 
 ```{r}
 # If Geo_code is NA, set it as Geo_unclaimed
+# Doing it this way because any other way does not remove 10 NAs 
 adoption <- adoption %>% 
   mutate(Geo_Code =  case_when(Geo_Code == "AMAR" ~ "AMAR",
                                Geo_Code == "EMEA" ~ "EMEA",
