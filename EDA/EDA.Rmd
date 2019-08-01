@@ -94,6 +94,7 @@ adoption <- adoption %>%
 ```
 
 
+
 Calculating customer's age in months based on registration date and storing in a new column on each table
 (takes a while to load, but it works!)
 
@@ -113,6 +114,20 @@ june$customer_age <- elapsed_months( june$Billing_month,june$Registration_date)
 
 ```
 
+```{r}
+
+april <- sqldf('Select Billing_month, Customer_ID, Registration_date, 
+      case when product_id is NULL then 0 else product_id end as product_id,                   Billed_amount, customer_age
+               from april')
+
+may <- sqldf('Select Billing_month, Customer_ID, Registration_date, 
+      case when product_id is NULL then 0 else product_id end as product_id,                   Billed_amount, customer_age
+               from may')
+
+june <- sqldf('Select Billing_month, Customer_ID, Registration_date, 
+      case when product_id is NULL then 0 else product_id end as product_id,                   Billed_amount, customer_age
+               from june')
+```
 
 
 ```{r}
@@ -194,4 +209,11 @@ All$Tools <- as.factor(All$Tools)
 
 
 
+```{r}
+
+#write.csv(combined, "combined.csv")
+#write.csv(All, "All.csv")
+#write.csv(adoption, "adoption.csv")
+
+```
 
