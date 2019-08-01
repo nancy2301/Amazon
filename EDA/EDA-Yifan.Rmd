@@ -66,6 +66,7 @@ summary(adoption)
 
 ```{r}
 # set factor
+adoption$Geo_Code <- as.character(adoption$Geo_Code)
 adoption$Customer_size <- as.factor(adoption$Customer_size)
 adoption$Visualize <- as.factor(adoption$Visualize)
 adoption$Alert <- as.factor(adoption$Alert)
@@ -91,6 +92,7 @@ adoption <- adoption %>% mutate(Geo_Code2 = ifelse(is.na(Geo_Code), "GEO-UNCLAIM
 
 adoption$Geo_Code <- as.factor(adoption$Geo_Code)
 
+adoption <- adoption %>% select(-Geo_Code)
 # customer information
 customerinfo <- adoption %>% 
   select(c("Customer_ID", "Customer_size", "Geo_Code2")) %>%
