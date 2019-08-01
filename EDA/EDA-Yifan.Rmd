@@ -51,10 +51,10 @@ library(here)
 
 
 ```{r, warning=FALSE, message=FALSE}
-adoption <- read_csv("adoption_final.csv")
-april <- read_csv("april_billing_final.csv")
-may <- read_csv("may_billing_final.csv")
-june <- read_csv("june_billing_final.csv")
+adoption <- read.csv(file = "../RawData/adoption_final.csv", header=TRUE, sep=",")
+april <- read.csv(file = "../RawData/april_billing_final.csv", header=TRUE, sep=",")
+may <- read.csv(file = "../RawData/may_billing_final.csv", header=TRUE, sep=",")
+june <- read.csv(file = "../RawData/june_billing_final.csv", header=TRUE, sep=",")
 
 ```
 
@@ -164,7 +164,7 @@ may2 <- may
 
 
 # Customer age
-may2$CustomerAge <- elapsed_months( april2$Billing_month,april2$Registration_date)
+may2$CustomerAge <- elapsed_months( may2$Billing_month,may2$Registration_date)
 
 mayfinish <- may2 %>%
   group_by(Customer_ID) %>%
@@ -182,7 +182,7 @@ june2 <- june
 
 
 # Customer age
-june2$CustomerAge <-  elapsed_months( april2$Billing_month,april2$Registration_date)
+june2$CustomerAge <-  elapsed_months( june2$Billing_month,june2$Registration_date)
 
 junefinish <- june2 %>%
   group_by(Customer_ID) %>%
