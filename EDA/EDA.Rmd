@@ -49,7 +49,7 @@ library(fpp2)
 library(olsrr)
 library(GGally)
 library(lubridate)
-library(eeptools)
+
 ```
 
 
@@ -86,6 +86,7 @@ adoption <- adoption %>% mutate(Geo_Code2 = ifelse(is.na(Geo_Code), "GEO-UNCLAIM
 adoption$Geo_Code <- as.factor(adoption$Geo_Code)
 
 adoption <- adoption %>% select(-Geo_Code)
+adoption$Geo_Code2 <- as.factor(adoption$Geo_Code2)
 ```
 
 
@@ -195,5 +196,23 @@ cust_product_tally_jun <- june %>%
                         tally()
 
 cust_product_tally_jun
+```
+
+# join table， customer ID as primary key
+```{r}
+adoptionApril <- adoption %>%
+  filter(grepl("April",Month))
+
+AprilAll <- adoptionApril %>% left_join(april , c("Customer_ID" = "Customer_ID"))
+
+adoptionMay <- adoption %>%
+  filter(grepl("May",Month))
+MayAll <- adoptionMay %>% left_join(may , c("Customer_ID" = "Customer_ID"))
+
+adoptionJune <- adoption %>%
+  filter(grepl("June",Month))
+JuneAll <-  adoptionJune %>% left_join(june , c("Customer_ID" = "Customer_ID"))
+
+rbind(AprilAll, MayAll, JuneAll)
 ```
 
