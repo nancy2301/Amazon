@@ -114,6 +114,8 @@ june$customer_age <- elapsed_months( june$Billing_month,june$Registration_date)
 
 ```
 
+# Replace null product_id with 0
+
 ```{r}
 
 april <- sqldf('Select Billing_month, Customer_ID, Registration_date, 
