@@ -127,38 +127,52 @@ summary(may)
 summary(june)
 ```
 
-
 ```{r}
-
-adoption <- sqldf('select *, case when Visualize like "%Yes%" or Alert like "%Yes%" or Report like "%Yes%"
-                              then "Yes"
-                              else "No" End as Tools_yes_no
-                  from adoption')
-
+aprilfinish <- april %>%
+  group_by(Customer_ID) %>%
+  summarise(ProductsUsed = n(), totalBilled = sum(Billed_amount), customer_age = mean(customer_age)) 
+mayfinish <- may %>%
+  group_by(Customer_ID) %>%
+  summarise(ProductsUsed = n(), totalBilled = sum(Billed_amount), customer_age = mean(customer_age))
+junefinish <- june %>%
+  group_by(Customer_ID) %>%
+  summarise(ProductsUsed = n(), totalBilled = sum(Billed_amount), customer_age = mean(customer_age)) 
 ```
 
 
-```{r}
 
-combined_month <- rbind(april, may, june)
-
-```
 
 # join table， customer ID as primary key
 ```{r}
 adoptionApril <- adoption %>%
   filter(grepl("April",Month))
 
-AprilAll <- adoptionApril %>% left_join(april , c("Customer_ID" = "Customer_ID"))
+AprilAll <- adoptionApril %>% left_join(aprilfinish , c("Customer_ID" = "Customer_ID"))
 
 adoptionMay <- adoption %>%
   filter(grepl("May",Month))
-MayAll <- adoptionMay %>% left_join(may , c("Customer_ID" = "Customer_ID"))
+MayAll <- adoptionMay %>% left_join(mayfinish , c("Customer_ID" = "Customer_ID"))
 
 adoptionJune <- adoption %>%
   filter(grepl("June",Month))
-JuneAll <-  adoptionJune %>% left_join(june , c("Customer_ID" = "Customer_ID"))
+JuneAll <-  adoptionJune %>% left_join(junefinish , c("Customer_ID" = "Customer_ID"))
 
 All <- rbind(AprilAll, MayAll, JuneAll)
+All$Customer_size <- as.factor(All$Customer_size)
+summary(All)
+
+
+
 ```
+
+
+```{r}
+
+All <- sqldf('select *, case when Visualize like "%Yes%" or Alert like "%Yes%" or Report like "%Yes%"
+                              then "Yes"
+                              else "No" End as Tools_yes_no
+                  from All')
+
+```
+
 
