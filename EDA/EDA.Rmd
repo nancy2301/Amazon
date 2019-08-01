@@ -165,14 +165,26 @@ summary(All)
 
 ```
 
+# Combine april, may and june billing information
 
 ```{r}
-
-All <- sqldf('select *, case when Visualize like "%Yes%" or Alert like "%Yes%" or Report like "%Yes%"
-                              then "Yes"
-                              else "No" End as Tools_yes_no
-                  from All')
-
+combined <- rbind(april, may, june)
 ```
 
+
+# Factorize Visualize, Alert and Report into 3 sections
+
+```{r}
+All <- All %>%
+  mutate(Tools = case_when(Visualize == "Yes" & Alert == "No" & Report == "No" ~ 1,
+                           Visualize == "No" & Alert == "Yes" & Report == "No" ~ 2,
+                           Visualize == "No" & Alert == "No" & Report == "Yes" ~ 3,
+                           Visualize == "Yes" & Alert == "Yes" & Report == "No" ~ 4,
+                           Visualize == "Yes" & Alert == "No" & Report == "Yes" ~ 5,
+                           Visualize == "No" & Alert == "Yes" & Report == "Yes" ~ 6,
+                           Visualize == "Yes" & Alert == "Yes" & Report == "Yes" ~ 7,
+                          Visualize == "No" & Alert == "No" & Report == "No" ~ 8))
+
+All$Tools <- as.factor(All$Tools)
+```
 
