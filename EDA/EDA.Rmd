@@ -41,7 +41,6 @@ if(is.null(sessionInfo()$otherPkgs) == FALSE) {
 
 ```{r, warning=FALSE, message=FALSE, echo=TRUE}
 library(tidyverse)
-library(here)
 library(skimr)
 library(sqldf)
 library(gridExtra)
