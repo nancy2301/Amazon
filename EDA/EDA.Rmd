@@ -81,12 +81,15 @@ str(adoption)
 
 ```{r}
 # If Geo_code is NA, set it as Geo_unclaimed
-adoption <- adoption %>% mutate(Geo_Code2 = ifelse(is.na(Geo_Code), "GEO-UNCLAIMED", Geo_Code))
+adoption <- adoption %>% 
+  mutate(Geo_Code =  case_when(Geo_Code == "AMAR" ~ "AMAR",
+                               Geo_Code == "EMEA" ~ "EMEA",
+                               Geo_Code == "APAC" ~ "APAC",
+                               Geo_Code == "JAPN" ~ "JAPN",
+                               Geo_Code == "CHNA" ~ "CHNA",
+                               Geo_Code == "GLBL" ~ "GLBL",
+                               TRUE ~ "GEO-UNCLAIMED"))
 
-adoption$Geo_Code <- as.factor(adoption$Geo_Code)
-
-adoption <- adoption %>% select(-Geo_Code)
-adoption$Geo_Code2 <- as.factor(adoption$Geo_Code2)
 ```
 
 
@@ -187,4 +190,7 @@ All <- All %>%
 
 All$Tools <- as.factor(All$Tools)
 ```
+
+
+
 
