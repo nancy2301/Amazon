@@ -127,58 +127,6 @@ summary(june)
 ```
 
 
-IDEALLY - add two new columns - total billed for month & count of products billed per customer
-
-having trouble storing output into a new column because grouping by customer-id reduced the number of rows 
-
-could always join the data back into the main table for the month but it seems like there should be a simpler way
-
-
-APRIL
-
-```{r}
-apr_bill_per_cust <- april %>% 
-                        group_by(Customer_ID) %>% 
-                        summarise(sum(Billed_amount))
-apr_bill_per_cust
-                              
-unique_customer_apr <- distinct(april, Customer_ID)
-
-unique_customer_apr
-
-cust_product_tally_apr <- april %>% 
-                        group_by(Customer_ID) %>% 
-                        tally()
-
-cust_product_tally_apr
-
-```
-
-
-MAY
-
-```{r}
-may_bill_per_cust <- may %>% 
-                        group_by(Customer_ID) %>% 
-                        summarise(sum(Billed_amount))
-may_bill_per_cust
-                   
-           
-unique_customer_may <- distinct(may, Customer_ID)
-unique_customer_may
-
-
-cust_product_tally_may <- may %>% 
-                        group_by(Customer_ID) %>% 
-                        tally()
-cust_product_tally_may
-
-
-```
-
-
-
-
 ```{r}
 
 adoption <- sqldf('select *, case when Visualize like "%Yes%" or Alert like "%Yes%" or Report like "%Yes%"
