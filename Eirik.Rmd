@@ -78,7 +78,6 @@ str(adoption)
 
 ```{r}
 # If Geo_code is NA, set it as Geo_unclaimed
-# Doing it this way because any other way does not remove 10 NAs 
 adoption <- adoption %>% 
   mutate(Geo_Code =  case_when(Geo_Code == "AMER" ~ "AMER",
                                Geo_Code == "EMEA" ~ "EMEA",
@@ -188,6 +187,7 @@ summary(All)
 
 
 ```
+
 
 # Combine april, may and june billing information
 
@@ -486,9 +486,29 @@ All %>%
   summarise(Tot_billed = sum(totalBilled)) %>%
   ggplot(aes(x = reorder(Tools, Tot_billed), y = Tot_billed)) +
   geom_bar(stat = "identity", fill = "#0c4c8a") +
-  theme_minimal()
+  theme_classic()
+
+All %>%
+  group_by(Tools) %>%
+  summarise(median_billed = median(totalBilled)) %>%
+  ggplot(aes(x = reorder(Tools, median_billed), y = median_billed)) +
+  geom_bar(stat = "identity", fill = "#0c4c8a") +
+  theme_classic()
+
+All %>%
+  group_by(Tools) %>%
+  summarise(mean_billed = mean(totalBilled)) %>%
+  ggplot(aes(x = reorder(Tools, mean_billed), y = mean_billed)) +
+  geom_bar(stat = "identity", fill = "#0c4c8a") +
+  theme_classic()
+
 
 ```
+
+
+
+
+
 
 ```{r}
 
