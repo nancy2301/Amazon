@@ -91,6 +91,12 @@ adoption <- adoption %>%
 ```
 
 
+```{r}
+adoption <- adoption %>%
+  filter(Geo_Code != "GEO-UNCLAIMED")
+
+```
+
 
 Calculating customer's age in months based on registration date and storing in a new column on each table
 (takes a while to load, but it works!)
