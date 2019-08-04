@@ -42,7 +42,7 @@ X = scaler.transform(X)
 clustering_kmeans = KMeans(n_clusters= 5, random_state = 74)
 master['clusters'] = clustering_kmeans.fit_predict(X)
 
-#master.to_csv('master_clust5.csv')
+master.to_csv('master_clust5.csv')
 
 grouped_data = master.groupby(['clusters'])
 
@@ -90,11 +90,14 @@ y_pred = mlp.predict(X_test)
 
 ## confusion matrix
 print('')
-print('NN Model - one hidden layer - 10 nodes, Identity')
+print('NN Model - one hidden layer - 8 nodes, Identity')
 print(metrics.confusion_matrix(y_test, y_pred)) 
 print("Neural Network Test Accuracy:",metrics.accuracy_score(y_test, y_pred))
 #print("Recall:", metrics.recall_score(y_test,y_pred,average = 'micro'))
 
+
+X_test['prediction'] = mlp.predict(X_test)
+X_test['Actual'] = y_test
 
 # with activation tanh
 mlp = MLPClassifier(hidden_layer_sizes=(10), max_iter=1000, activation = 'tanh', random_state = 9)  
@@ -102,6 +105,8 @@ mlp.fit(X_train, y_train)
 
 ## predict test set 
 y_pred = mlp.predict(X_test)  
+
+master.to_csv('X_test.csv')
 
 ## confusion matrix
 print('')
