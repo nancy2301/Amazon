@@ -1,0 +1,175 @@
+---
+title: "Random Forrest"
+output: html_notebook
+---
+
+
+```{r, include= FALSE}
+
+# Clear environment of variables and functions
+rm(list = ls(all = TRUE)) 
+
+# Clear environmet of packages
+if(is.null(sessionInfo()$otherPkgs) == FALSE)lapply(paste("package:", names(sessionInfo()$otherPkgs), sep=""), detach, character.only = TRUE, unload = TRUE)
+
+```
+
+
+```{r, include= FALSE }
+library(dplyr)
+library(randomForest)
+library(caret)
+library(e1071)
+
+```
+
+
+```{r}
+data <- read.csv("master_clust.csv")
+data4 <- read.csv("master_clust4.csv")
+data5 <- read.csv("master_clust5.csv")
+data6 <- read.csv("master_clust6.csv")
+data7 <- read.csv("master_clust4_Wgeo.csv")
+
+glimpse(data)
+
+```
+
+
+```{r}
+# DATA 
+data_train <- data %>%
+                select("Month", "Customer_size", "Geo_Code", "ProductsUsed", "totalBilled", "customer_age", "tools_used_not", "clusters") %>% 
+                filter(Month == "April-19" | Month == "May-19")
+
+data_test <- data %>% 
+                select("Month", "Customer_size", "Geo_Code", "ProductsUsed", "totalBilled", "customer_age", "tools_used_not", "clusters") %>% 
+                filter(Month== "June-19")
+
+# DATA 4
+
+data_train4 <- data4 %>%
+                select("Month", "Customer_size", "Geo_Code", "ProductsUsed", "totalBilled", "customer_age", "tools_used_not", "clusters") %>% 
+                filter(Month == "April-19" | Month == "May-19")
+  
+data_test4 <- data4 %>% 
+                select("Month", "Customer_size", "Geo_Code", "ProductsUsed", "totalBilled", "customer_age", "tools_used_not", "clusters") %>% 
+                filter(Month== "June-19")
+
+
+# DATA 5
+
+data_train5 <- data5 %>%
+                select("Month", "Customer_size", "Geo_Code", "ProductsUsed", "totalBilled", "customer_age", "tools_used_not", "clusters") %>% 
+                filter(Month == "April-19" | Month == "May-19")
+  
+data_test5 <- data5 %>% 
+                select("Month", "Customer_size", "Geo_Code", "ProductsUsed", "totalBilled", "customer_age", "tools_used_not", "clusters") %>% 
+                filter(Month== "June-19")
+
+
+# DATA 6
+data_train6 <- data6 %>%
+                select("Month", "Customer_size", "Geo_Code", "ProductsUsed", "totalBilled", "customer_age", "tools_used_not", "clusters") %>% 
+                filter(Month == "April-19" | Month == "May-19")
+  
+data_test6 <- data6 %>% 
+                select("Month", "Customer_size", "Geo_Code", "ProductsUsed", "totalBilled", "customer_age", "tools_used_not", "clusters") %>% 
+                filter(Month== "June-19")
+
+
+# DATA 7
+data_train7 <- data7 %>%
+                select("Month", "Customer_size", "Geo_Code", "ProductsUsed", "totalBilled", "customer_age", "tools_used_not", "clusters") %>% 
+                filter(Month == "April-19" | Month == "May-19")
+  
+data_test7 <- data7 %>% 
+                select("Month", "Customer_size", "Geo_Code", "ProductsUsed", "totalBilled", "customer_age", "tools_used_not", "clusters") %>% 
+                filter(Month== "June-19")
+
+
+
+```
+
+
+Model 1 (Data)
+
+```{r}
+set.seed(1)  # for reproducibility
+m1 <- randomForest(formula = tools_used_not ~ ., 
+                             data = data_train)
+                             
+# Generate predicted classes using the model object
+class_prediction <- predict(object = m1,  # model object 
+                            newdata = data_test,  # test dataset
+                            type = "class")         # return classification labels
+                            
+# Calculate the confusion matrix for the test set
+cm <- confusionMatrix(data = class_prediction,          # predicted classes
+                      reference = data_test$tools_used_not)  # actual classes
+print(cm)
+```
+
+Model 2 (Data 7) - 4 clusters - geo code used to make clusters
+
+```{r}
+
+set.seed(1)  # for reproducibility
+m2 <- randomForest(formula = tools_used_not ~ ., 
+                             data = data_train7)
+                             
+# Generate predicted classes using the model object
+class_prediction <- predict(object = m2,  # model object 
+                            newdata = data_test7,  # test dataset
+                            type = "class")         # return classification labels
+                            
+# Calculate the confusion matrix for the test set
+cm <- confusionMatrix(data = class_prediction,          # predicted classes
+                      reference = data_test$tools_used_not)  # actual classes
+print(cm)
+
+```
+
+
+Model 3 (Data 5)
+
+```{r}
+
+set.seed(1)  # for reproducibility
+m3 <- randomForest(formula = tools_used_not ~ ., 
+                             data = data_train5)
+                             
+# Generate predicted classes using the model object
+class_prediction <- predict(object = m3,  # model object 
+                            newdata = data_test5,  # test dataset
+                            type = "class")         # return classification labels
+                            
+# Calculate the confusion matrix for the test set
+cm <- confusionMatrix(data = class_prediction,          # predicted classes
+                      reference = data_test$tools_used_not)  # actual classes
+print(cm)
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
