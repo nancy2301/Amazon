@@ -29,12 +29,12 @@ master.replace(cleannum1, inplace = True)
 
 labels = master["tools_used_not"]
 master['tool_used_not[Yes]'] = master['tools_used_not'].astype('category').cat.codes
-X = master.drop(['Unnamed: 0', 'Month', 'Geo_Code', 'billing_month', 'Customer_ID', 'tools_used_not', 'Visualize', 'Alert', 'Report', 'Tools', 'tool_used_not[Yes]', ], axis = 1)
+X = master.drop(['Unnamed: 0', 'Month', 'billing_month', 'Customer_ID', 'tools_used_not', 'Visualize', 'Alert', 'Report', 'Tools', 'tool_used_not[Yes]', ], axis = 1)
 
-clustering_kmeans = KMeans(n_clusters= 6)
+clustering_kmeans = KMeans(n_clusters= 4)
 master['clusters'] = clustering_kmeans.fit_predict(X)
 
-master.to_csv('master_clust6.csv')
+master.to_csv('master_clust4_Wgeo.csv')
 
 grouped_data = master.groupby(['clusters'])
 
@@ -69,12 +69,12 @@ print('')
 print('NN Model - one hidden layer - 10 nodes, Logistic')
 print(metrics.confusion_matrix(y_test, y_pred))
 
-print("Neural Network Test Accuracy:",metrics.accuracy_score(y_test, y_pred_test))
+print("Neural Network Test Accuracy:",metrics.accuracy_score(y_test, y_pred))
 
 
 
 # With activation identity
-mlp = MLPClassifier(hidden_layer_sizes=(7), max_iter=1000, activation = 'identity')  
+mlp = MLPClassifier(hidden_layer_sizes=(10), max_iter=1000, activation = 'identity')  
 mlp.fit(X_train, y_train)  
 
 ## predict test set 
@@ -84,8 +84,7 @@ y_pred = mlp.predict(X_test)
 print('')
 print('NN Model - one hidden layer - 10 nodes, Identity')
 print(metrics.confusion_matrix(y_test, y_pred)) 
-print("Neural Network Test Accuracy:",metrics.accuracy_score(y_test, y_pred_test))
-
+print("Neural Network Test Accuracy:",metrics.accuracy_score(y_test, y_pred))
 
 
 # with activation tanh
@@ -118,7 +117,7 @@ print(metrics.confusion_matrix(y_test, y_pred))
 
 
 # with three layers and less nodes
-mlp = MLPClassifier(hidden_layer_sizes=(3, 3), max_iter=1000)  
+mlp = MLPClassifier(hidden_layer_sizes=(3, 6), max_iter=1000, activation = 'logistic')  
 mlp.fit(X_train, y_train)  
 
 ## predict test set 
@@ -161,7 +160,7 @@ print(metrics.confusion_matrix(y_test, y_pred))
 
 
 # With activation identity
-mlp = MLPClassifier(hidden_layer_sizes=(7), max_iter=1000, activation = 'identity')  
+mlp = MLPClassifier(hidden_layer_sizes=(10), max_iter=1000, activation = 'identity')  
 mlp.fit(X_train, y_train)  
 
 ## predict test set 
