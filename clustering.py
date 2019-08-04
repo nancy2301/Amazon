@@ -31,10 +31,10 @@ labels = master["tools_used_not"]
 master['tool_used_not[Yes]'] = master['tools_used_not'].astype('category').cat.codes
 X = master.drop(['Unnamed: 0', 'Month', 'Geo_Code', 'billing_month', 'Customer_ID', 'tools_used_not', 'Visualize', 'Alert', 'Report', 'Tools', 'tool_used_not[Yes]', ], axis = 1)
 
-clustering_kmeans = KMeans(n_clusters= 5)
+clustering_kmeans = KMeans(n_clusters= 6)
 master['clusters'] = clustering_kmeans.fit_predict(X)
 
-master.to_csv('master_clust.csv')
+master.to_csv('master_clust6.csv')
 
 grouped_data = master.groupby(['clusters'])
 
@@ -70,13 +70,11 @@ print('NN Model - one hidden layer - 10 nodes, Logistic')
 print(metrics.confusion_matrix(y_test, y_pred))
 
 print("Neural Network Test Accuracy:",metrics.accuracy_score(y_test, y_pred_test))
-print("F score:", metrics.f1_score(y_test,y_pred_test,average = 'weighted'))
-print("Precision: ", metrics.precision_score(y_test,y_pred_test,average = 'weighted'))
-print("Recall:", metrics.recall_score(y_test,y_pred_test,average = 'weighted'))
+
 
 
 # With activation identity
-mlp = MLPClassifier(hidden_layer_sizes=(10), max_iter=1000, activation = 'identity')  
+mlp = MLPClassifier(hidden_layer_sizes=(7), max_iter=1000, activation = 'identity')  
 mlp.fit(X_train, y_train)  
 
 ## predict test set 
@@ -86,6 +84,7 @@ y_pred = mlp.predict(X_test)
 print('')
 print('NN Model - one hidden layer - 10 nodes, Identity')
 print(metrics.confusion_matrix(y_test, y_pred)) 
+print("Neural Network Test Accuracy:",metrics.accuracy_score(y_test, y_pred_test))
 
 
 
