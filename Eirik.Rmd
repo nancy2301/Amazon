@@ -517,7 +517,12 @@ write.csv(All, "master.csv")
 ```
 
 
+```{r}
+All %>%
+  filter(ProductsUsed == 1) %>%
+  summarise(ma = max(totalBilled))
 
+```
 
 
 
