@@ -474,7 +474,6 @@ ggplot(data = All) +
   theme_minimal() +
   facet_wrap(vars(Geo_Code))
 
-
 ```
 
 + Visualize looks to have a higher conversion rate here as well, across the geographical areas
@@ -501,7 +500,6 @@ All %>%
   ggplot(aes(x = reorder(Tools, mean_billed), y = mean_billed)) +
   geom_bar(stat = "identity", fill = "#0c4c8a") +
   theme_classic()
-
 
 ```
 
