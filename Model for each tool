@@ -1,0 +1,257 @@
+import os
+import numpy as np
+import pandas as pd
+import statsmodels.api as st
+from sklearn.model_selection import train_test_split
+from sklearn import metrics
+from sklearn import tree
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.svm import SVC
+from sklearn.neural_network import MLPClassifier
+import patsy
+import graphviz
+
+os.chdir("/Users/xiangyifan/Desktop/SU/MSBA/19RQ/MGMT5200/Project/Ememem")
+All = pd.read_csv("master_clust5.csv", sep = ',', header = 0)
+
+All = All[All['tools_used_not'] == 'Yes']
+
+
+# Visualize
+
+## variable selected
+y_vis = All['Visualize']
+X = All[['Geo_Code','ProductsUsed','customer_age','totalBilled']]    
+
+## Decision Tree           
+X = pd.get_dummies(X,drop_first=True,prefix_sep='_')
+X_train, X_test, y_train, y_test = train_test_split(X, y_vis, test_size=0.30,random_state=9)
+clf = tree.DecisionTreeClassifier(class_weight=None, criterion='gini', max_depth=10, max_features=None, max_leaf_nodes=None, min_samples_leaf=5,
+            min_samples_split=2, min_weight_fraction_leaf=0.0,
+            presort=False, random_state=100, splitter='best')
+clf = clf.fit(X_train, y_train)
+y_pred_train = clf.predict(X_train)   ## predict train set
+y_pred_test = clf.predict(X_test)     ## predict test set
+print(metrics.confusion_matrix(y_test, y_pred_test))
+print("Decision Tree Train Accuracy for Visualize:",metrics.accuracy_score(y_train, y_pred_train))
+cm1 = metrics.confusion_matrix(y_test, y_pred_test)
+testaccuracy =  (cm1[0][0] + cm1[1][1])/(cm1[0][0] + cm1[1][1]+cm1[0][1]+cm1[1][0])
+recall = cm1[1][1]/(cm1[1][0]+cm1[1][1])
+precision = cm1[1][1]/(cm1[1][1]+cm1[0][1])
+Fscore = (2*precision*recall)/(precision + recall)
+print("Decision Tree Test Accuracy for Visualize:", testaccuracy)
+print("Decision Tree Recall for Visualize:", recall)
+print("Decision Tree Precision for Visualize:", precision)
+print("Decision Tree F score for Visualize:", Fscore)
+
+
+# export estimated tree into dot graphic file
+dot_data = tree.export_graphviz(clf, out_file='Dtree_airport.dot',filled=True,rounded = True, feature_names=X.columns)
+
+
+# Logit Model
+interaction = "Visualize ~  Geo_Code +  ProductsUsed + customer_age + totalBilled"
+
+y,XX = patsy.dmatrices(interaction, All, return_type = "dataframe")
+
+X_train, X_test, y_train, y_test = train_test_split(XX, y_vis, test_size=0.30,random_state=9)
+num_col_names = ['ProductsUsed','totalBilled','customer_age']   ## scale only numeric variable
+scaler = StandardScaler().fit(X_train[num_col_names].values)
+X_train[num_col_names] = scaler.transform(X_train[num_col_names].values)
+X_test[num_col_names] = scaler.transform(X_test[num_col_names].values)
+Logit = st.MNLogit(y_train, X_train).fit_regularized()
+
+print(Logit.summary())
+y_prob_train = Logit.predict(X_train)
+y_pred_train = y_vis.astype('category').cat.categories[y_prob_train.idxmax(axis=1)]
+y_prob_test = Logit.predict(X_test)
+y_pred_test = y_vis.astype('category').cat.categories[y_prob_test.idxmax(axis=1)]
+
+cm1 = metrics.confusion_matrix(y_test, y_pred_test)
+testaccuracy =  (cm1[0][0] + cm1[1][1])/(cm1[0][0] + cm1[1][1]+cm1[0][1]+cm1[1][0])
+recall = cm1[1][1]/(cm1[1][0]+cm1[1][1])
+precision = cm1[1][1]/(cm1[1][1]+cm1[0][1])
+Fscore = (2*precision*recall)/(precision + recall)
+print(cm1)
+print("Logit Test Accuracy for Visualize:", testaccuracy)
+print("Logit Recall for Visualize:", recall)
+print("Logit Precision for Visualize:", precision)
+print("Logit F score for Visualize:", Fscore)
+
+# Neural Network 
+mlp = MLPClassifier(hidden_layer_sizes=(350,500), random_state=9,max_iter=5000)
+mlp.fit(X_train, y_train)
+y_pred_train = mlp.predict(X_train)    ## predict train set
+y_pred_test = mlp.predict(X_test)  	## predict test set
+
+cm1 = metrics.confusion_matrix(y_test, y_pred_test)
+testaccuracy =  (cm1[0][0] + cm1[1][1])/(cm1[0][0] + cm1[1][1]+cm1[0][1]+cm1[1][0])
+recall = cm1[1][1]/(cm1[1][0]+cm1[1][1])
+precision = cm1[1][1]/(cm1[1][1]+cm1[0][1])
+Fscore = (2*precision*recall)/(precision + recall)
+print(cm1)
+print("NN Test Accuracy for Visualize:", testaccuracy)
+print("NN Recall for Visualize:", recall)
+print("NN Precision for Visualize:", precision)
+print("NN F score for Visualize:", Fscore)
+
+
+# Alert
+
+## variable selected
+y_vis = All['Alert']
+X = All[['Geo_Code','ProductsUsed','customer_age','totalBilled']]    
+
+## Decision Tree           
+X = pd.get_dummies(X,drop_first=True,prefix_sep='_')
+X_train, X_test, y_train, y_test = train_test_split(X, y_vis, test_size=0.30,random_state=9)
+clf = tree.DecisionTreeClassifier(class_weight=None, criterion='gini', max_depth=10, max_features=None, max_leaf_nodes=None, min_samples_leaf=5,
+            min_samples_split=2, min_weight_fraction_leaf=0.0,
+            presort=False, random_state=100, splitter='best')
+clf = clf.fit(X_train, y_train)
+y_pred_train = clf.predict(X_train)   ## predict train set
+y_pred_test = clf.predict(X_test)     ## predict test set
+print(metrics.confusion_matrix(y_test, y_pred_test))
+print("Decision Tree Train Accuracy for Alert:",metrics.accuracy_score(y_train, y_pred_train))
+cm1 = metrics.confusion_matrix(y_test, y_pred_test)
+testaccuracy =  (cm1[0][0] + cm1[1][1])/(cm1[0][0] + cm1[1][1]+cm1[0][1]+cm1[1][0])
+recall = cm1[1][1]/(cm1[1][0]+cm1[1][1])
+precision = cm1[1][1]/(cm1[1][1]+cm1[0][1])
+Fscore = (2*precision*recall)/(precision + recall)
+print("Decision Tree Test Accuracy for Alert:", testaccuracy)
+print("Decision Tree Recall for Alert:", recall)
+print("Decision Tree Precision for Alert:", precision)
+print("Decision Tree F score for Alert:", Fscore)
+
+
+# export estimated tree into dot graphic file
+dot_data = tree.export_graphviz(clf, out_file='Dtree_airport.dot',filled=True,rounded = True, feature_names=X.columns)
+
+
+# Logit Model
+interaction = "Visualize ~  Geo_Code +  ProductsUsed + customer_age +  totalBilled"
+
+y,XX = patsy.dmatrices(interaction, All, return_type = "dataframe")
+
+X_train, X_test, y_train, y_test = train_test_split(XX, y_vis, test_size=0.30,random_state=9)
+num_col_names = ['ProductsUsed','totalBilled','customer_age']   ## scale only numeric variable
+scaler = StandardScaler().fit(X_train[num_col_names].values)
+X_train[num_col_names] = scaler.transform(X_train[num_col_names].values)
+X_test[num_col_names] = scaler.transform(X_test[num_col_names].values)
+Logit = st.MNLogit(y_train, X_train).fit_regularized()
+
+print(Logit.summary())
+y_prob_train = Logit.predict(X_train)
+y_pred_train = y_vis.astype('category').cat.categories[y_prob_train.idxmax(axis=1)]
+y_prob_test = Logit.predict(X_test)
+y_pred_test = y_vis.astype('category').cat.categories[y_prob_test.idxmax(axis=1)]
+
+cm1 = metrics.confusion_matrix(y_test, y_pred_test)
+testaccuracy =  (cm1[0][0] + cm1[1][1])/(cm1[0][0] + cm1[1][1]+cm1[0][1]+cm1[1][0])
+recall = cm1[1][1]/(cm1[1][0]+cm1[1][1])
+precision = cm1[1][1]/(cm1[1][1]+cm1[0][1])
+Fscore = (2*precision*recall)/(precision + recall)
+print(cm1)
+print("Logit Test Accuracy for Alert:", testaccuracy)
+print("Logit Recall for Alert:", recall)
+print("Logit Precision for Alert:", precision)
+print("Logit F score for Alert:", Fscore)
+
+# Neural Network 
+mlp = MLPClassifier(hidden_layer_sizes=(350,500), random_state=9,max_iter=5000)
+mlp.fit(X_train, y_train)
+y_pred_train = mlp.predict(X_train)    ## predict train set
+y_pred_test = mlp.predict(X_test)  	## predict test set
+
+cm1 = metrics.confusion_matrix(y_test, y_pred_test)
+testaccuracy =  (cm1[0][0] + cm1[1][1])/(cm1[0][0] + cm1[1][1]+cm1[0][1]+cm1[1][0])
+recall = cm1[1][1]/(cm1[1][0]+cm1[1][1])
+precision = cm1[1][1]/(cm1[1][1]+cm1[0][1])
+Fscore = (2*precision*recall)/(precision + recall)
+print(cm1)
+print("NN test Accuracy for Alert:", testaccuracy)
+print("NN Recall for Alert:", recall)
+print("NN Precision for Alert:", precision)
+print("NN F score for Alert:", Fscore)
+
+
+
+
+# Report
+
+## variable selected
+y_vis = All['Report']
+X = All[['Geo_Code','ProductsUsed','customer_age','totalBilled']]    
+
+## Decision Tree           
+X = pd.get_dummies(X,drop_first=True,prefix_sep='_')
+X_train, X_test, y_train, y_test = train_test_split(X, y_vis, test_size=0.30,random_state=9)
+clf = tree.DecisionTreeClassifier(class_weight=None, criterion='gini', max_depth=10, max_features=None, max_leaf_nodes=None, min_samples_leaf=5,
+            min_samples_split=2, min_weight_fraction_leaf=0.0,
+            presort=False, random_state=100, splitter='best')
+clf = clf.fit(X_train, y_train)
+y_pred_train = clf.predict(X_train)   ## predict train set
+y_pred_test = clf.predict(X_test)     ## predict test set
+print(metrics.confusion_matrix(y_test, y_pred_test))
+print("Decision Tree Train Accuracy for Report:",metrics.accuracy_score(y_train, y_pred_train))
+cm1 = metrics.confusion_matrix(y_test, y_pred_test)
+testaccuracy =  (cm1[0][0] + cm1[1][1])/(cm1[0][0] + cm1[1][1]+cm1[0][1]+cm1[1][0])
+recall = cm1[1][1]/(cm1[1][0]+cm1[1][1])
+precision = cm1[1][1]/(cm1[1][1]+cm1[0][1])
+Fscore = (2*precision*recall)/(precision + recall)
+print("Decision Tree Test Accuracy for Report:", testaccuracy)
+print("Decision Tree Recall for Report:", recall)
+print("Decision Tree Precision for Report:", precision)
+print("Decision Tree F score for Report:", Fscore)
+
+
+# export estimated tree into dot graphic file
+dot_data = tree.export_graphviz(clf, out_file='Dtree_airport.dot',filled=True,rounded = True, feature_names=X.columns)
+
+
+# Logit Model
+interaction = "Visualize ~  Geo_Code +  ProductsUsed + customer_age  + totalBilled"
+
+y,XX = patsy.dmatrices(interaction, All, return_type = "dataframe")
+
+X_train, X_test, y_train, y_test = train_test_split(XX, y_vis, test_size=0.30,random_state=9)
+num_col_names = ['ProductsUsed','totalBilled','customer_age']   ## scale only numeric variable
+scaler = StandardScaler().fit(X_train[num_col_names].values)
+X_train[num_col_names] = scaler.transform(X_train[num_col_names].values)
+X_test[num_col_names] = scaler.transform(X_test[num_col_names].values)
+Logit = st.MNLogit(y_train, X_train).fit_regularized()
+
+print(Logit.summary())
+y_prob_train = Logit.predict(X_train)
+y_pred_train = y_vis.astype('category').cat.categories[y_prob_train.idxmax(axis=1)]
+y_prob_test = Logit.predict(X_test)
+y_pred_test = y_vis.astype('category').cat.categories[y_prob_test.idxmax(axis=1)]
+
+cm1 = metrics.confusion_matrix(y_test, y_pred_test)
+testaccuracy =  (cm1[0][0] + cm1[1][1])/(cm1[0][0] + cm1[1][1]+cm1[0][1]+cm1[1][0])
+recall = cm1[1][1]/(cm1[1][0]+cm1[1][1])
+precision = cm1[1][1]/(cm1[1][1]+cm1[0][1])
+Fscore = (2*precision*recall)/(precision + recall)
+print(cm1)
+print("Logit Test Accuracy for Report:", testaccuracy)
+print("Logit Recall for Report:", recall)
+print("Logit Precision for Report:", precision)
+print("Logit F score for Report:", Fscore)
+
+# Neural Network 
+mlp = MLPClassifier(hidden_layer_sizes=(350,500), random_state=9,max_iter=5000)
+mlp.fit(X_train, y_train)
+y_pred_train = mlp.predict(X_train)    ## predict train set
+y_pred_test = mlp.predict(X_test)  	## predict test set
+
+cm1 = metrics.confusion_matrix(y_test, y_pred_test)
+testaccuracy =  (cm1[0][0] + cm1[1][1])/(cm1[0][0] + cm1[1][1]+cm1[0][1]+cm1[1][0])
+recall = cm1[1][1]/(cm1[1][0]+cm1[1][1])
+precision = cm1[1][1]/(cm1[1][1]+cm1[0][1])
+Fscore = (2*precision*recall)/(precision + recall)
+print(cm1)
+print("NN Test Accuracy for Report:", testaccuracy)
+print("NN Recall for Report:", recall)
+print("NN Precision for Report:", precision)
+print("NN F score for Report:", Fscore)
+
