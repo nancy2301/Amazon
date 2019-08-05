@@ -48,6 +48,9 @@ library(fpp2)
 library(olsrr)
 library(GGally)
 library(lubridate)
+library(kableExtra)
+library(janitor)
+
 
 ```
 
@@ -93,10 +96,15 @@ adoption <- adoption %>%
 ```
 
 
+# Removing Geo Unclaimd, since only 60 some rows
+```{r}
+adoption <- adoption %>%
+  filter(Geo_Code != "GEO-UNCLAIMED")
 
-Calculating customer's age in months based on registration date and storing in a new column on each table
-(takes a while to load, but it works!)
+```
 
+
+# Calculating customer's age in months based on registration date and storing in a new column on each table
 ```{r}
 
 elapsed_months <- function(end_date, start_date) {
@@ -114,7 +122,6 @@ june$customer_age <- elapsed_months( june$Billing_month,june$Registration_date)
 ```
 
 # Replace null product_id with 0
-
 ```{r}
 
 april <- sqldf('Select Billing_month, Customer_ID, Registration_date, 
@@ -131,22 +138,27 @@ june <- sqldf('Select Billing_month, Customer_ID, Registration_date,
 ```
 
 
+# Summary of adoption Table
 ```{r}
 summary(adoption)
 ```
 
+# Summary of April  
 ```{r}
 summary(april)
 ```
 
+# Summary of May
 ```{r}
 summary(may)
 ```
 
+# Summary of June
 ```{r}
 summary(june)
 ```
 
+# Finding total number of product used for each customer
 ```{r}
 aprilfinish <- april %>%
   group_by(Customer_ID) %>%
@@ -162,7 +174,7 @@ junefinish <- june %>%
 
 
 
-# join table， customer ID as primary key
+# join table customer ID as primary key
 ```{r}
 adoptionApril <- adoption %>%
   filter(grepl("April",Month))
@@ -186,14 +198,12 @@ summary(All)
 ```
 
 # Combine april, may and june billing information
-
 ```{r}
 combined <- rbind(april, may, june)
 ```
 
 
 # Factorize Visualize, Alert and Report into 3 sections
-
 ```{r}
 All <- All %>%
   mutate(Tools = case_when(Visualize == "Yes" & Alert == "No" & Report == "No" ~ 1,
@@ -209,12 +219,292 @@ All$Tools <- as.factor(All$Tools)
 ```
 
 
+# Adding column to check if customer is using any of the three products or not
+# Drop remaining 7 NAs
+```{r}
+All <- All %>%
+  mutate(tools_used_not = case_when(Visualize == "Yes" | Alert == "Yes" | Report == "Yes" ~ "Yes",
+         Visualize == "No" & Alert == "No" & Report == "No" ~ "No"))
 
+All <- All %>%
+  drop_na(ProductsUsed)
+
+```
+
+# Table of Distribution of Geo Code and Customer Size
 ```{r}
 
-#write.csv(combined, "combined.csv")
-#write.csv(All, "All.csv")
-#write.csv(adoption, "adoption.csv")
+# customer information
+customerinfo <- adoption %>% 
+  select(c("Customer_ID", "Customer_size", "Geo_Code")) %>%
+  group_by(Customer_ID) %>%
+  filter(row_number()==1)
+
+summary(customerinfo)
+
+
+#Create function for frequency tables 
+count_table <- function(x,colname){
+   x = enquo(x)
+   kable(
+    customerinfo %>%
+      tabyl(!!x) %>%
+      adorn_totals()%>%
+      adorn_pct_formatting(digits = 2 ),
+      digits = 2,
+      format = "html",
+      align = c("l","c","c"),
+      col.names = c(colname,"Count","Total")
+    )%>%
+  kable_styling(full_width = F)}
+
+#Make count tables for univariate variables 
+count_table(Customer_size,"Customer size")
+count_table(Geo_Code,"Geo distribution")
+
+
+```
+
+# Top 20 products id
+```{r}
+
+combined %>%
+  group_by(product_id) %>%
+  summarise(prod_tally = length(product_id)) %>%
+  group_by(product_id) %>%
+  summarise(tot_prod = sum(prod_tally)) %>%
+  arrange(desc(tot_prod)) %>%
+  head(n = 20) %>%
+  ggplot(aes(x = factor(reorder(product_id, tot_prod)), y = tot_prod)) +
+  geom_bar(stat = "identity", fill = "#0c4c8a") +
+  theme_classic()
+  
+
+```
+
+
+# Distribution of Tools bought
+```{r}
+All %>%
+  ggplot(aes(customer_age, fill = tools_used_not)) +
+  geom_density(alpha = 0.6)
+  
+
+All %>%
+  ggplot(aes(customer_age, fill = Tools)) +
+  geom_density(alpha = 0.5)
+
+```
+
+
+# Total number of unique observations in each column
+```{r}
+sapply(All, function(x) length(unique(x)))
+
+```
+
+# Most tools are used by all regions and company sizes
+```{r}
+All %>%
+  distinct(Geo_Code, Tools) %>%
+  count(Tools)
+
+All %>%
+  distinct(Customer_size, Tools) %>%
+  count(Tools)
+
+```
+
+# GeoCode vs Customer Size
+```{r}
+addmargins(xtabs(~ Customer_size + Geo_Code, data = adoption))
+
+addmargins(round(prop.table(xtabs(~ Customer_size + Geo_Code, data = adoption)), 3))
+```
+
+# Tools used or not by Geo Code
+```{r}
+addmargins(xtabs(~ tools_used_not + Geo_Code, data = All))
+
+addmargins(round(prop.table(xtabs(~ tools_used_not + Geo_Code, data = All)), 3))
+
+```
+
+# Adding registration data back
+```{r}
+
+All <- All %>%
+  mutate(billing_month = case_when(Month == "April-19" ~ "2019-04-01",
+                                   Month == "May-19" ~ "2019-05-01",
+                                   Month == "June-19" ~ "2019-06-01"))
+
+All$billing_month <- as.Date(All$billing_month)
+```
+
+
+# Trend in billing and number of products used
+```{r}
+
+grid.arrange(
+  All %>%
+    group_by(billing_month, Customer_size) %>%
+    summarise(billing = sum(totalBilled)) %>%
+    ggplot(aes(factor(billing_month), factor(billing), colour = Customer_size)) +
+    geom_point() +
+    geom_smooth() +
+    theme_classic(),
+  
+  All %>%
+    group_by(billing_month, Customer_size) %>%
+    summarise(prod_used = sum(ProductsUsed)) %>%
+    ggplot(aes(factor(billing_month), factor(prod_used), colour = Customer_size)) +
+    geom_point() +
+    geom_smooth() +
+    theme_classic()
+)
+
+```
+
+
+# Billing and Products used by month
+```{r}
+
+grid.arrange(
+  All %>%
+    group_by(billing_month) %>%
+    summarise(billing = sum(totalBilled)) %>%
+    ggplot(aes(x = billing_month, y = factor(billing))) +
+    geom_bar(stat = "identity", fill = "#0c4c8a") +
+    theme_classic(),
+  
+  All %>%
+    group_by(billing_month) %>%
+    summarise(prod_used = sum(ProductsUsed)) %>%
+    ggplot(aes(x = billing_month, factor(prod_used))) +
+    geom_bar(stat = "identity", fill = "#0c4c8a") +
+    theme_classic()
+  
+)
+
+```
+
+# Using any Product vs No
+```{r}
+ggplot(data = All) +
+  aes(x = tools_used_not) +
+  geom_bar(fill = "#0c4c8a") +
+  theme_minimal()
+
+```
+
+# Tools used or not by Region
+```{r}
+ggplot(data = All) +
+  aes(x = tools_used_not) +
+  geom_bar(fill = "#0c4c8a") +
+  theme_minimal() +
+  facet_wrap(vars(Geo_Code))
+
+```
+
+# BoxPlot looking at Products used vs Bought or not
+```{r}
+ggplot(data = All) +
+  aes(x = tools_used_not, y = ProductsUsed) +
+  geom_boxplot(fill = "#0c4c8a") +
+  theme_minimal()
+
+```
+
+
+# Which Tools are purchased the most?
+```{r}
+ggplot(data = All) +
+  aes(x = Tools) +
+  geom_bar(fill = "#0c4c8a") +
+  theme_minimal()
+
+
+```
++ Number 1 --> Visualize is the most popular
+
+
+# Looking at the three different products by Customer Size
+```{r}
+ggplot(data = All) +
+  aes(x = Visualize) +
+  geom_bar(fill = "#0c4c8a") +
+  theme_minimal() +
+  facet_wrap(vars(Customer_size))
+
+ggplot(data = All) +
+  aes(x = Report) +
+  geom_bar(fill = "#0c4c8a") +
+  theme_minimal() +
+  facet_wrap(vars(Customer_size))
+
+ggplot(data = All) +
+  aes(x = Alert) +
+  geom_bar(fill = "#0c4c8a") +
+  theme_minimal() +
+  facet_wrap(vars(Customer_size))
+
+```
+
+
+# Looking at the three different products by Geographical Area
+```{r}
+ggplot(data = All) +
+  aes(x = Visualize) +
+  geom_bar(fill = "#0c4c8a") +
+  theme_minimal() +
+  facet_wrap(vars(Geo_Code))
+
+ggplot(data = All) +
+  aes(x = Report) +
+  geom_bar(fill = "#0c4c8a") +
+  theme_minimal() +
+  facet_wrap(vars(Geo_Code))
+
+ggplot(data = All) +
+  aes(x = Alert) +
+  geom_bar(fill = "#0c4c8a") +
+  theme_minimal() +
+  facet_wrap(vars(Geo_Code))
+
+```
++ Visualize looks to have a higher conversion rate here as well, across the geographical areas
+
+Billing by Tool group
+```{r}
+All %>%
+  group_by(Tools) %>%
+  summarise(Tot_billed = sum(totalBilled)) %>%
+  ggplot(aes(x = reorder(Tools, Tot_billed), y = Tot_billed)) +
+  geom_bar(stat = "identity", fill = "#0c4c8a") +
+  theme_classic()
+
+All %>%
+  group_by(Tools) %>%
+  summarise(median_billed = median(totalBilled)) %>%
+  ggplot(aes(x = reorder(Tools, median_billed), y = median_billed)) +
+  geom_bar(stat = "identity", fill = "#0c4c8a") +
+  theme_classic()
+
+All %>%
+  group_by(Tools) %>%
+  summarise(mean_billed = mean(totalBilled)) %>%
+  ggplot(aes(x = reorder(Tools, mean_billed), y = mean_billed)) +
+  geom_bar(stat = "identity", fill = "#0c4c8a") +
+  theme_classic()
+
+```
+
+
+# Writing final dataset to CSV for Machine Learning in Python
+```{r}
+
+write.csv(All, "master.csv")
 
 ```
 
