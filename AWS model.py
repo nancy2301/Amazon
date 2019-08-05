@@ -11,8 +11,8 @@ from sklearn.neural_network import MLPClassifier
 import patsy
 import graphviz
 
-os.chdir("/Users/xiangyifan/Desktop/SU/MSBA/19RQ/MGMT5200/Project/AMAZOn")
-All = pd.read_csv("Master.csv", sep = ',', header = 0)
+os.chdir("/Users/xiangyifan/Desktop/SU/MSBA/19RQ/MGMT5200/Project/Ememem")
+All = pd.read_csv("master_clust5.csv", sep = ',', header = 0)
 
 All = All[All['tools_used_not'] == 'Yes']
 
@@ -28,7 +28,7 @@ y_test = All_test['Tools']
 
 ## Decision Tree
 
-col_names = ['Customer_size', 'Geo_Code', 'ProductsUsed', 'totalBilled', 'customer_age','cluster']     ## variable selected
+col_names = ['Customer_size', 'Geo_Code', 'ProductsUsed', 'totalBilled', 'customer_age','clusters']     ## variable selected
 tree_train = All_train[col_names]
 tree_test = All_test[col_names]
 
@@ -48,6 +48,8 @@ clf = clf.fit(X_train, y_train)
 
 y_pred_train = clf.predict(X_train)   ## predict train set
 y_pred_test = clf.predict(X_test)     ## predict test set
+
+
 print(metrics.confusion_matrix(y_test, y_pred_test))
 print("Decision Tree Train Accuracy:",metrics.accuracy_score(y_train, y_pred_train))
 print("Decision Tree Test Accuracy:",metrics.accuracy_score(y_test, y_pred_test))
@@ -61,7 +63,7 @@ dot_data = tree.export_graphviz(clf, out_file='Dtree.dot',filled=True,rounded = 
 
 
 # MNLogit Model
-interaction2 = "Tools ~ Customer_size + Geo_Code + ProductsUsed + totalBilled + customer_age + cluster "
+interaction2 = "Tools ~ Customer_size + Geo_Code + ProductsUsed + totalBilled + customer_age + clusters "
 
 y_train,XX2train = patsy.dmatrices(interaction2, All_train, return_type = "dataframe")
 
@@ -101,5 +103,6 @@ print("Neural Network Test Accuracy:",metrics.accuracy_score(y_test, y_pred_test
 print("F score:", metrics.f1_score(y_test,y_pred_test,average = 'weighted'))
 print("Precision: ", metrics.precision_score(y_test,y_pred_test,average = 'weighted'))
 print("Recall:", metrics.recall_score(y_test,y_pred_test,average = 'weighted'))
+
 
 
