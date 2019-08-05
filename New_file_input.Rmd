@@ -1,0 +1,232 @@
+---
+title: "Amazon new file input"
+author: "Eirik, Jillian, Nancy, Yifan, Ziyu "
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+output:
+  html_document:
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    toc_depth: 3
+    toc_float: yes
+  # pdf_document: 
+  #   latex_engine: xelatex
+  
+---
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(
+	fig.width = 8.5,
+	message = FALSE,
+	warning = FALSE,
+	# include = FALSE,
+	echo = FALSE
+)
+
+options(tinytex.verbose = TRUE)
+
+# Clear environment of variables and functions
+rm(list = ls(all = TRUE)) 
+
+# Clear environment of packages
+if(is.null(sessionInfo()$otherPkgs) == FALSE) {
+  lapply(paste("package:", names(sessionInfo()$otherPkgs), sep=""), 
+         detach, character.only = TRUE, unload = TRUE)
+}
+```
+
+
+# Install and load Packages
+
+```{r, warning=FALSE, message=FALSE, echo=TRUE}
+library(tidyverse)
+library(skimr)
+library(sqldf)
+library(gridExtra)
+library(fpp2)
+library(olsrr)
+library(GGally)
+library(lubridate)
+library(kableExtra)
+library(janitor)
+
+
+```
+
+
+# Load New file
+```{r, warning=FALSE, message=FALSE, echo=TRUE}
+
+new_file <- read.csv(file = "../RawData/new_file.csv", header=TRUE, sep=",")
+
+```
+
+
+
+```{r}
+new_file$Geo_Code <- as.character(new_file$Geo_Code)
+new_file$Customer_size <- as.factor(new_file$Customer_size)
+new_file$Month <- as.factor(new_file$Month)
+new_file$Customer_ID <- as.factor(new_file$Customer_ID)
+summary(new_file)
+str(new_file)
+```
+
+
+```{r}
+# If Geo_code is NA, set it as Geo_unclaimed
+# Doing it this way because any other way does not remove 10 NAs 
+new_file <- new_file %>% 
+  mutate(Geo_Code =  case_when(Geo_Code == "AMER" ~ "AMER",
+                               Geo_Code == "EMEA" ~ "EMEA",
+                               Geo_Code == "APAC" ~ "APAC",
+                               Geo_Code == "JAPN" ~ "JAPN",
+                               Geo_Code == "CHNA" ~ "CHNA",
+                               Geo_Code == "GLBL" ~ "GLBL",
+                               TRUE ~ "GEO-UNCLAIMED"))
+
+```
+
+
+# Removing Geo Unclaimd, since only 60 some rows
+```{r}
+new_file <- new_file %>%
+  filter(Geo_Code != "GEO-UNCLAIMED")
+
+```
+
+
+# Calculating customer's age in months based on registration date and storing in a new column on each table
+```{r}
+
+elapsed_months <- function(end_date, start_date) {
+    ed <- as.POSIXlt(end_date)
+    sd <- as.POSIXlt(start_date)
+    12 * (ed$year - sd$year) + (ed$mon - sd$mon)
+}
+
+april$customer_age <- elapsed_months( april$Billing_month, april$Registration_date)
+
+may$customer_age <- elapsed_months( may$Billing_month, may$Registration_date)
+
+june$customer_age <- elapsed_months( june$Billing_month,june$Registration_date)
+
+```
+
+# Replace null product_id with 0
+```{r}
+
+april <- sqldf('Select Billing_month, Customer_ID, Registration_date, 
+      case when product_id is NULL then 0 else product_id end as product_id,                   Billed_amount, customer_age
+               from april')
+
+may <- sqldf('Select Billing_month, Customer_ID, Registration_date, 
+      case when product_id is NULL then 0 else product_id end as product_id,                   Billed_amount, customer_age
+               from may')
+
+june <- sqldf('Select Billing_month, Customer_ID, Registration_date, 
+      case when product_id is NULL then 0 else product_id end as product_id,                   Billed_amount, customer_age
+               from june')
+```
+
+
+# Summary of adoption Table
+```{r}
+summary(new_file)
+```
+
+# Summary of April  
+```{r}
+summary(april)
+```
+
+# Summary of May
+```{r}
+summary(may)
+```
+
+# Summary of June
+```{r}
+summary(june)
+```
+
+# Finding total number of product used for each customer
+```{r}
+aprilfinish <- april %>%
+  group_by(Customer_ID) %>%
+  summarise(ProductsUsed = n(), totalBilled = sum(Billed_amount), customer_age = mean(customer_age)) 
+mayfinish <- may %>%
+  group_by(Customer_ID) %>%
+  summarise(ProductsUsed = n(), totalBilled = sum(Billed_amount), customer_age = mean(customer_age))
+junefinish <- june %>%
+  group_by(Customer_ID) %>%
+  summarise(ProductsUsed = n(), totalBilled = sum(Billed_amount), customer_age = mean(customer_age)) 
+```
+
+
+# join table customer ID as primary key
+```{r}
+new_fileApril <- new_file %>%
+  filter(grepl("April",Month))
+
+AprilAll <- new_fileApril %>% left_join(aprilfinish , c("Customer_ID" = "Customer_ID"))
+
+new_fileMay <- new_file %>%
+  filter(grepl("May",Month))
+MayAll <- adoptionMay %>% left_join(mayfinish , c("Customer_ID" = "Customer_ID"))
+
+new_fileJune <- new_file %>%
+  filter(grepl("June",Month))
+JuneAll <-  adoptionJune %>% left_join(junefinish , c("Customer_ID" = "Customer_ID"))
+
+All <- rbind(AprilAll, MayAll, JuneAll)
+All$Customer_size <- as.factor(All$Customer_size)
+summary(All)
+
+```
+
+# Combine april, may and june billing information
+```{r}
+combined <- rbind(april, may, june)
+```
+
+
+# Factorize Visualize, Alert and Report into 3 sections
+```{r}
+All <- All %>%
+  mutate(Tools = case_when(Visualize == "Yes" & Alert == "No" & Report == "No" ~ 1,
+                           Visualize == "No" & Alert == "Yes" & Report == "No" ~ 2,
+                           Visualize == "No" & Alert == "No" & Report == "Yes" ~ 3,
+                           Visualize == "Yes" & Alert == "Yes" & Report == "No" ~ 4,
+                           Visualize == "Yes" & Alert == "No" & Report == "Yes" ~ 5,
+                           Visualize == "No" & Alert == "Yes" & Report == "Yes" ~ 6,
+                           Visualize == "Yes" & Alert == "Yes" & Report == "Yes" ~ 7,
+                          Visualize == "No" & Alert == "No" & Report == "No" ~ 8))
+
+All$Tools <- as.factor(All$Tools)
+```
+
+
+# Adding column to check if customer is using any of the three products or not
+# Drop remaining 7 NAs
+```{r}
+All <- All %>%
+  mutate(tools_used_not = case_when(Visualize == "Yes" | Alert == "Yes" | Report == "Yes" ~ "Yes",
+         Visualize == "No" & Alert == "No" & Report == "No" ~ "No"))
+
+All <- All %>%
+  drop_na(ProductsUsed)
+
+```
+
+
+# Writing final dataset to CSV for Machine Learning in Python
+```{r}
+
+write.csv(All, "new.csv")
+
+```
+
+
+
