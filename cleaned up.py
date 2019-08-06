@@ -73,3 +73,6 @@ print('NN Model - one hidden layer - 8 nodes, Identity')
 print(metrics.confusion_matrix(y_test, y_pred)) 
 print("Neural Network Test Accuracy:",metrics.accuracy_score(y_test, y_pred))
 
+
+X_test['Prediction'] = mlp.predict(X_test)
+X_test['Actual'] = y_test
